@@ -30,8 +30,8 @@ module Canonicity where
   record Con (Γˢ : S.Con) : Type₁ where
     no-eta-equality
     field
-      tot : Set lzero
-      map : ∣ tot ∣ → S.Sub S.◆ Γˢ
+      sem : Set lzero
+      map : ∣ sem ∣ → S.Sub S.◆ Γˢ
 
   open Con public
   private variable Γ Δ Θ Ξ : Con Γˢ
@@ -39,8 +39,8 @@ module Canonicity where
   record Sub (Δ : Con Δˢ) (Γ : Con Γˢ) (γˢ : S.Sub Δˢ Γˢ) : Type where
     no-eta-equality
     field
-      tot : ∣ Δ .tot ∣ → ∣ Γ .tot ∣
-      map : ∀ δ → Γ .map (tot δ) ≡ γˢ S.∘ Δ .map δ
+      sem : ∣ Δ .sem ∣ → ∣ Γ .sem ∣
+      map : ∀ δ → Γ .map (sem δ) ≡ γˢ S.∘ Δ .map δ
 
   open Sub public
   private unquoteDecl Sub-eqv = declare-record-iso Sub-eqv (quote Sub)
@@ -59,20 +59,20 @@ module Canonicity where
 
   Sub-path :
     {γ₁ : Sub Δ Γ γ₁ˢ} {γ₂ : Sub Δ Γ γ₂ˢ} {γ₁ˢ≡γ₂ˢ : γ₁ˢ ≡ γ₂ˢ} →
-    (∀ δ → γ₁ .tot δ ≡ γ₂ .tot δ) → γ₁ ≡ˢ[ γ₁ˢ≡γ₂ˢ ] γ₂
-  Sub-path tot-path i .tot δ = tot-path δ i
+    (∀ δ → γ₁ .sem δ ≡ γ₂ .sem δ) → γ₁ ≡ˢ[ γ₁ˢ≡γ₂ˢ ] γ₂
+  Sub-path sem-path i .sem δ = sem-path δ i
   Sub-path
-    {Δ = Δ} {Γ = Γ} {γ₁ = γ₁} {γ₂ = γ₂} {γ₁ˢ≡γ₂ˢ = γ₁ˢ≡γ₂ˢ} tot-path i .map =
+    {Δ = Δ} {Γ = Γ} {γ₁ = γ₁} {γ₂ = γ₂} {γ₁ˢ≡γ₂ˢ = γ₁ˢ≡γ₂ˢ} sem-path i .map =
     prop!
-      {A = λ i → ∀ δ → Γ .map (tot-path δ i) ≡ γ₁ˢ≡γ₂ˢ i S.∘ Δ .map δ}
+      {A = λ i → ∀ δ → Γ .map (sem-path δ i) ≡ γ₁ˢ≡γ₂ˢ i S.∘ Δ .map δ}
       {x = γ₁ .map} {y = γ₂ .map} i
 
   infixl 40 _∘_
   _∘_ : Sub Δ Γ γˢ → Sub Θ Δ δˢ → Sub Θ Γ (γˢ S.∘ δˢ)
-  (γ ∘ δ) .tot θ = γ .tot (δ .tot θ)
+  (γ ∘ δ) .sem θ = γ .sem (δ .sem θ)
   _∘_ {Δ = Δ} {Γ = Γ} {γˢ = γˢ} {Θ = Θ} {δˢ = δˢ} γ δ .map θ =
-    Γ .map (γ .tot (δ .tot θ))   ≡⟨ γ .map _ ⟩
-    γˢ S.∘ ⌜ Δ .map (δ .tot θ) ⌝ ≡⟨ ap! (δ .map _) ⟩
+    Γ .map (γ .sem (δ .sem θ))   ≡⟨ γ .map _ ⟩
+    γˢ S.∘ ⌜ Δ .map (δ .sem θ) ⌝ ≡⟨ ap! (δ .map _) ⟩
     γˢ S.∘ (δˢ S.∘ Θ .map θ)     ≡⟨ S.assoc _ _ _ ⟩
     γˢ S.∘ δˢ S.∘ Θ .map θ       ∎
 
@@ -82,7 +82,7 @@ module Canonicity where
   assoc γ δ θ = Sub-path λ ξ → refl
 
   id : Sub Γ Γ S.id
-  id .tot γ = γ
+  id .sem γ = γ
   id .map γ = sym (S.idl _)
 
   idr : (γ : Sub Δ Γ γˢ) → γ ∘ id ≡ˢ[ S.idr _ ] γ
@@ -94,8 +94,8 @@ module Canonicity where
   record Ty (Aˢ : S.Ty) : Type₁ where
     no-eta-equality
     field
-      tot : Set lzero
-      map : ∣ tot ∣ → S.Tm S.◆ Aˢ
+      sem : Set lzero
+      map : ∣ sem ∣ → S.Tm S.◆ Aˢ
 
   open Ty public
   private variable A B : Ty Aˢ
@@ -103,8 +103,8 @@ module Canonicity where
   record Tm (Γ : Con Γˢ) (A : Ty Aˢ) (aˢ : S.Tm Γˢ Aˢ) : Type where
     no-eta-equality
     field
-      tot : ∣ Γ .tot ∣ → ∣ A .tot ∣
-      map : ∀ γ → A .map (tot γ) ≡ aˢ S.[ Γ .map γ ]
+      sem : ∣ Γ .sem ∣ → ∣ A .sem ∣
+      map : ∀ γ → A .map (sem γ) ≡ aˢ S.[ Γ .map γ ]
 
   open Tm public
   private unquoteDecl Tm-eqv = declare-record-iso Tm-eqv (quote Tm)
@@ -123,20 +123,20 @@ module Canonicity where
 
   Tm-path :
     {a₁ : Tm Γ A a₁ˢ} {a₂ : Tm Γ A a₂ˢ} {a₁ˢ≡a₂ˢ : a₁ˢ ≡ a₂ˢ} →
-    (∀ γ → a₁ .tot γ ≡ a₂ .tot γ) → a₁ ≡ᵗ[ a₁ˢ≡a₂ˢ ] a₂
-  Tm-path tot-path i .tot γ = tot-path γ i
+    (∀ γ → a₁ .sem γ ≡ a₂ .sem γ) → a₁ ≡ᵗ[ a₁ˢ≡a₂ˢ ] a₂
+  Tm-path sem-path i .sem γ = sem-path γ i
   Tm-path
-    {Γ = Γ} {A = A} {a₁ = a₁} {a₂ = a₂} {a₁ˢ≡a₂ˢ = a₁ˢ≡a₂ˢ} tot-path i .map =
+    {Γ = Γ} {A = A} {a₁ = a₁} {a₂ = a₂} {a₁ˢ≡a₂ˢ = a₁ˢ≡a₂ˢ} sem-path i .map =
     prop!
-      {A = λ i → ∀ γ → A .map (tot-path γ i) ≡ a₁ˢ≡a₂ˢ i S.[ Γ .map γ ]}
+      {A = λ i → ∀ γ → A .map (sem-path γ i) ≡ a₁ˢ≡a₂ˢ i S.[ Γ .map γ ]}
       {x = a₁ .map} {y = a₂ .map} i
 
   infixl 40 _[_]
   _[_] : Tm Γ A aˢ → Sub Δ Γ γˢ → Tm Δ A (aˢ S.[ γˢ ])
-  (a [ γ ]) .tot δ = a .tot (γ .tot δ)
+  (a [ γ ]) .sem δ = a .sem (γ .sem δ)
   _[_] {Γ = Γ} {A = A} {aˢ = aˢ} {Δ = Δ} {γˢ = γˢ} a γ .map δ =
-    A .map (a .tot (γ .tot δ))     ≡⟨ a .map _ ⟩
-    aˢ S.[ ⌜ Γ .map (γ .tot δ) ⌝ ] ≡⟨ ap! (γ .map _) ⟩
+    A .map (a .sem (γ .sem δ))     ≡⟨ a .map _ ⟩
+    aˢ S.[ ⌜ Γ .map (γ .sem δ) ⌝ ] ≡⟨ ap! (γ .map _) ⟩
     aˢ S.[ γˢ S.∘ Δ .map δ ]       ≡⟨ S.[]-∘ _ _ _ ⟩
     aˢ S.[ γˢ ] S.[ Δ .map δ ]     ∎
 
@@ -150,23 +150,23 @@ module Canonicity where
 
   infixl 4 _▸_
   _▸_ : Con Γˢ → Ty Aˢ → Con (Γˢ S.▸ Aˢ)
-  (Γ ▸ A) .tot = el! (∣ Γ .tot ∣ P.× ∣ A .tot ∣)
+  (Γ ▸ A) .sem = el! (∣ Γ .sem ∣ P.× ∣ A .sem ∣)
   (Γ ▸ A) .map (γ P., a) = Γ .map γ S., A .map a
 
   p : Sub (Γ ▸ A) Γ S.p
-  p .tot (γ P., a) = γ
+  p .sem (γ P., a) = γ
   p .map (γ P., a) = sym (S.▸-β₁ _ _)
 
   q : Tm (Γ ▸ A) A S.q
-  q .tot (γ P., a) = a
+  q .sem (γ P., a) = a
   q .map (γ P., a) = sym (S.▸-β₂ _ _)
 
   infixl 4 _,_
   _,_ : Sub Δ Γ γˢ → Tm Δ A aˢ → Sub Δ (Γ ▸ A) (γˢ S., aˢ)
-  (γ , a) .tot δ = γ .tot δ P., a .tot δ
+  (γ , a) .sem δ = γ .sem δ P., a .sem δ
   _,_ {Δ = Δ} {Γ = Γ} {γˢ = γˢ} {A = A} {aˢ = aˢ} γ a .map δ =
-    ⌜ Γ .map (γ .tot δ) ⌝ S., A .map (a .tot δ) ≡⟨ ap! (γ .map _) ⟩
-    γˢ S.∘ Δ .map δ S., ⌜ A .map (a .tot δ) ⌝   ≡⟨ ap! (a .map _) ⟩
+    ⌜ Γ .map (γ .sem δ) ⌝ S., A .map (a .sem δ) ≡⟨ ap! (γ .map _) ⟩
+    γˢ S.∘ Δ .map δ S., ⌜ A .map (a .sem δ) ⌝   ≡⟨ ap! (a .map _) ⟩
     γˢ S.∘ Δ .map δ S., aˢ S.[ Δ .map δ ]       ≡˘⟨ S.,-∘ _ _ _ ⟩
     (γˢ S., aˢ) S.∘ Δ .map δ                    ∎
 
@@ -189,11 +189,11 @@ module Canonicity where
   ▸-η = Sub-path λ (γ P., a) → refl
 
   ◆ : Con S.◆
-  ◆ .tot = el! P.⊤
+  ◆ .sem = el! P.⊤
   ◆ .map P.tt = S.ε
 
   ε : Sub Γ ◆ S.ε
-  ε .tot γ = P.tt
+  ε .sem γ = P.tt
   ε .map γ = sym (S.ε-∘ _)
 
   ε-∘ : (γ : Sub Δ Γ γˢ) → ε ∘ γ ≡ˢ[ S.ε-∘ _ ] ε
@@ -213,8 +213,8 @@ module Canonicity where
     no-eta-equality
     field
       syn : S.Tm S.◆ (Aˢ S.⇒ Bˢ)
-      tot : ∣ A .tot ∣ → ∣ B .tot ∣
-      map : ∀ a → B .map (tot a) ≡ S.app syn (A .map a)
+      sem : ∣ A .sem ∣ → ∣ B .sem ∣
+      map : ∀ a → B .map (sem a) ≡ S.app syn (A .map a)
 
   open Fun public
   private unquoteDecl Fun-eqv = declare-record-iso Fun-eqv (quote Fun)
@@ -228,25 +228,25 @@ module Canonicity where
 
   Fun-path :
     {f₁ f₂ : Fun A B} →
-    f₁ .syn ≡ f₂ .syn → (∀ a → f₁ .tot a ≡ f₂ .tot a) → f₁ ≡ f₂
-  Fun-path syn-path tot-path i .syn = syn-path i
-  Fun-path syn-path tot-path i .tot a = tot-path a i
-  Fun-path {A = A} {B = B} {f₁ = f₁} {f₂ = f₂} syn-path tot-path i .map =
+    f₁ .syn ≡ f₂ .syn → (∀ a → f₁ .sem a ≡ f₂ .sem a) → f₁ ≡ f₂
+  Fun-path syn-path sem-path i .syn = syn-path i
+  Fun-path syn-path sem-path i .sem a = sem-path a i
+  Fun-path {A = A} {B = B} {f₁ = f₁} {f₂ = f₂} syn-path sem-path i .map =
     prop!
-      {A = λ i → ∀ a → B .map (tot-path a i) ≡ S.app (syn-path i) (A .map a)}
+      {A = λ i → ∀ a → B .map (sem-path a i) ≡ S.app (syn-path i) (A .map a)}
       {x = f₁ .map} {y = f₂ .map} i
 
   infixr 0 _⇒_
   _⇒_ : Ty Aˢ → Ty Bˢ → Ty (Aˢ S.⇒ Bˢ)
-  (A ⇒ B) .tot = el! (Fun A B)
+  (A ⇒ B) .sem = el! (Fun A B)
   (A ⇒ B) .map = syn
 
   app : Tm Γ (A ⇒ B) fˢ → Tm Γ A aˢ → Tm Γ B (S.app fˢ aˢ)
-  app f a .tot γ = f .tot γ .tot (a .tot γ)
+  app f a .sem γ = f .sem γ .sem (a .sem γ)
   app {Γ = Γ} {A = A} {B = B} {fˢ = fˢ} {aˢ = aˢ} f a .map γ =
-    B .map (f .tot γ .tot (a .tot γ))               ≡⟨ f .tot _ .map _ ⟩
-    S.app ⌜ f .tot γ .syn ⌝ (A .map (a .tot γ))     ≡⟨ ap! (f .map _) ⟩
-    S.app (fˢ S.[ Γ .map γ ]) ⌜ A .map (a .tot γ) ⌝ ≡⟨ ap! (a .map _) ⟩
+    B .map (f .sem γ .sem (a .sem γ))               ≡⟨ f .sem _ .map _ ⟩
+    S.app ⌜ f .sem γ .syn ⌝ (A .map (a .sem γ))     ≡⟨ ap! (f .map _) ⟩
+    S.app (fˢ S.[ Γ .map γ ]) ⌜ A .map (a .sem γ) ⌝ ≡⟨ ap! (a .map _) ⟩
     S.app (fˢ S.[ Γ .map γ ]) (aˢ S.[ Γ .map γ ])   ≡˘⟨ S.app-[] _ _ _ ⟩
     S.app fˢ aˢ S.[ Γ .map γ ]                      ∎
 
@@ -256,10 +256,10 @@ module Canonicity where
   app-[] f a γ = Tm-path λ δ → refl
 
   lam : Tm (Γ ▸ A) B bˢ → Tm Γ (A ⇒ B) (S.lam bˢ)
-  lam {Γ = Γ} {bˢ = bˢ} b .tot γ .syn = S.lam bˢ S.[ Γ .map γ ]
-  lam b .tot γ .tot a = b .tot (γ P., a)
-  lam {Γ = Γ} {A = A} {B = B} {bˢ = bˢ} b .tot γ .map a =
-    B .map (b .tot (γ P., a))                          ≡⟨ b .map _ ⟩
+  lam {Γ = Γ} {bˢ = bˢ} b .sem γ .syn = S.lam bˢ S.[ Γ .map γ ]
+  lam b .sem γ .sem a = b .sem (γ P., a)
+  lam {Γ = Γ} {A = A} {B = B} {bˢ = bˢ} b .sem γ .map a =
+    B .map (b .sem (γ P., a))                          ≡⟨ b .map _ ⟩
     bˢ S.[ ⌜ Γ .map γ S., A .map a ⌝ ]                 ≡˘⟨ ap¡ (S.↑-⟨⟩ _ _) ⟩
     bˢ S.[ (Γ .map γ S.↑) S.∘ S.⟨ A .map a ⟩ ]         ≡⟨ S.[]-∘ _ _ _ ⟩
     bˢ S.[ Γ .map γ S.↑ ] S.[ S.⟨ A .map a ⟩ ]         ≡˘⟨ S.⇒-β _ _ ⟩
@@ -272,7 +272,7 @@ module Canonicity where
     lam b [ γ ] ≡ᵗ[ S.lam-[] _ _ ] lam (b [ γ ↑ ])
   lam-[] {Γ = Γ} {bˢ = bˢ} {Δ = Δ} {γˢ} b γ = Tm-path λ δ →
     Fun-path
-      ( S.lam bˢ S.[ ⌜ Γ .map (γ .tot δ) ⌝ ]   ≡⟨ ap! (γ .map _) ⟩
+      ( S.lam bˢ S.[ ⌜ Γ .map (γ .sem δ) ⌝ ]   ≡⟨ ap! (γ .map _) ⟩
         S.lam bˢ S.[ γˢ S.∘ Δ .map δ ]         ≡⟨ S.[]-∘ _ _ _ ⟩
         ⌜ S.lam bˢ S.[ γˢ ] ⌝ S.[ Δ .map δ ]   ≡⟨ ap! (S.lam-[] _ _) ⟩
         S.lam (bˢ S.[ γˢ S.↑ ]) S.[ Δ .map δ ] ∎)
@@ -288,16 +288,16 @@ module Canonicity where
     Fun-path
       ( ⌜ S.lam (S.app (fˢ S.[ S.p ]) S.q) ⌝ S.[ Γ .map γ ] ≡⟨ ap! (S.⇒-η _) ⟩
         fˢ S.[ Γ .map γ ]                                   ≡˘⟨ f .map _ ⟩
-        f .tot γ .syn                                       ∎)
+        f .sem γ .syn                                       ∎)
       λ a → refl
 
   ⊥ : Ty S.⊥
-  ⊥ .tot = el! P.⊥
+  ⊥ .sem = el! P.⊥
   ⊥ .map ()
 
   ⊥-rec : Tm Γ ⊥ tˢ → Tm Γ A (S.⊥-rec tˢ)
-  ⊥-rec t .tot γ = P.absurd (t .tot γ)
-  ⊥-rec t .map γ = P.absurd (t .tot γ)
+  ⊥-rec t .sem γ = P.absurd (t .sem γ)
+  ⊥-rec t .map γ = P.absurd (t .sem γ)
 
   ⊥-rec-[] :
     (t : Tm Γ ⊥ tˢ) (γ : Sub Δ Γ γˢ) →
@@ -305,19 +305,19 @@ module Canonicity where
   ⊥-rec-[] t γ = Tm-path λ δ → refl
 
   Bool : Ty S.Bool
-  Bool .tot = el! P.Bool
+  Bool .sem = el! P.Bool
   Bool .map P.true = S.true
   Bool .map P.false = S.false
 
   true : Tm Γ Bool S.true
-  true .tot γ = P.true
+  true .sem γ = P.true
   true .map γ = sym (S.true-[] _)
 
   true-[] : (γ : Sub Δ Γ γˢ) → true [ γ ] ≡ᵗ[ S.true-[] _ ] true
   true-[] γ = Tm-path λ δ → refl
 
   false : Tm Γ Bool S.false
-  false .tot γ = P.false
+  false .sem γ = P.false
   false .map γ = sym (S.false-[] _)
 
   false-[] : (γ : Sub Δ Γ γˢ) → false [ γ ] ≡ᵗ[ S.false-[] _ ] false
@@ -325,12 +325,12 @@ module Canonicity where
 
   Bool-rec :
     Tm Γ A a₁ˢ → Tm Γ A a₂ˢ → Tm Γ Bool tˢ → Tm Γ A (S.Bool-rec a₁ˢ a₂ˢ tˢ)
-  Bool-rec a₁ a₂ t .tot γ = P.if (a₁ .tot γ) (a₂ .tot γ) (t .tot γ)
+  Bool-rec a₁ a₂ t .sem γ = P.if (a₁ .sem γ) (a₂ .sem γ) (t .sem γ)
   Bool-rec {Γ = Γ} {A = A} {a₁ˢ = a₁ˢ} {a₂ˢ = a₂ˢ} {tˢ = tˢ} a₁ a₂ t .map γ =
-    A .map (P.if (a₁ .tot γ) (a₂ .tot γ) (t .tot γ))                              ≡⟨ Bool-rec-map _ _ _ ⟩
-    S.Bool-rec ⌜ A .map (a₁ .tot γ) ⌝ (A .map (a₂ .tot γ)) (Bool .map (t .tot γ)) ≡⟨ ap! (a₁ .map _) ⟩
-    S.Bool-rec (a₁ˢ S.[ Γ .map γ ]) ⌜ A .map (a₂ .tot γ) ⌝ (Bool .map (t .tot γ)) ≡⟨ ap! (a₂ .map _) ⟩
-    S.Bool-rec (a₁ˢ S.[ Γ .map γ ]) (a₂ˢ S.[ Γ .map γ ]) ⌜ Bool .map (t .tot γ) ⌝ ≡⟨ ap! (t .map _) ⟩
+    A .map (P.if (a₁ .sem γ) (a₂ .sem γ) (t .sem γ))                              ≡⟨ Bool-rec-map _ _ _ ⟩
+    S.Bool-rec ⌜ A .map (a₁ .sem γ) ⌝ (A .map (a₂ .sem γ)) (Bool .map (t .sem γ)) ≡⟨ ap! (a₁ .map _) ⟩
+    S.Bool-rec (a₁ˢ S.[ Γ .map γ ]) ⌜ A .map (a₂ .sem γ) ⌝ (Bool .map (t .sem γ)) ≡⟨ ap! (a₂ .map _) ⟩
+    S.Bool-rec (a₁ˢ S.[ Γ .map γ ]) (a₂ˢ S.[ Γ .map γ ]) ⌜ Bool .map (t .sem γ) ⌝ ≡⟨ ap! (t .map _) ⟩
     S.Bool-rec (a₁ˢ S.[ Γ .map γ ]) (a₂ˢ S.[ Γ .map γ ]) (tˢ S.[ Γ .map γ ])      ≡˘⟨ S.Bool-rec-[] _ _ _ _ ⟩
     S.Bool-rec a₁ˢ a₂ˢ tˢ S.[ Γ .map γ ]                                          ∎
     where
@@ -364,11 +364,11 @@ Canonicity = record {Canonicity}
 open STLC.Induction Canonicity
 
 canonicalize : S.Tm S.◆ S.Bool → P.Bool
-canonicalize t = Tm-ind t .tot P.tt
+canonicalize t = Tm-ind t .sem P.tt
 
 completeness : ∀ t → Bool .map (canonicalize t) ≡ t
 completeness t =
-  Bool .map (Tm-ind t .tot P.tt) ≡⟨ Tm-ind t .map P.tt ⟩
+  Bool .map (Tm-ind t .sem P.tt) ≡⟨ Tm-ind t .map P.tt ⟩
   t S.[ ⌜ S.ε ⌝ ]                ≡⟨ ap! S.◆-η ⟩
   t S.[ S.id ]                   ≡⟨ S.[]-id _ ⟩
   t                              ∎

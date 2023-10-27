@@ -6,9 +6,9 @@ open import 1Lab.Path.IdentitySystem
 open import 1Lab.HLevel
 open import 1Lab.HLevel.Retracts
 open import 1Lab.Reflection.Marker
-open import Data.Nat
 open import Data.Dec
 open import Data.Id.Base
+open import Data.Nat
 
 private variable n : Nat
 

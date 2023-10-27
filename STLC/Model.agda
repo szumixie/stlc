@@ -8,7 +8,7 @@ open import Data.Nat
 
 private variable n : Nat
 
-record Model : Type (lsuc (lsuc lzero)) where
+record Model : Type₂ where
   no-eta-equality
   infixl 40 _∘_ _[_]
   infixl 4 _▸_ _,_

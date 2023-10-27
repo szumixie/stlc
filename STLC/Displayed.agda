@@ -14,7 +14,7 @@ private variable
   Aˢ Bˢ : S.Ty
   aˢ a₁ˢ a₂ˢ bˢ fˢ tˢ : S.Tm Γˢ Aˢ
 
-record Displayed : Type (lsuc (lsuc lzero)) where
+record Displayed : Type₂ where
   no-eta-equality
   field
     Con : S.Con → Type₁

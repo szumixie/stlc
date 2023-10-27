@@ -25,7 +25,7 @@ Tm-ind : ∀ a → M.Tm (Con-ind Γ) (Ty-ind A) a
 Sub-ind (S.Sub-is-set γ₁ γ₂ p q i j) =
   is-set→squarep
     {A = λ i j → M.Sub _ _ (S.Sub-is-set _ _ _ _ i j)}
-    (λ i j → hlevel!) refl (λ j → Sub-ind (p j)) (λ j → Sub-ind (q j)) refl i j
+    (λ i j → hlevel 2) refl (λ j → Sub-ind (p j)) (λ j → Sub-ind (q j)) refl i j
 Sub-ind (γ S.∘ δ) = Sub-ind γ M.∘ Sub-ind δ
 Sub-ind (S.assoc γ δ θ i) = M.assoc (Sub-ind γ) (Sub-ind δ) (Sub-ind θ) i
 
@@ -47,7 +47,7 @@ Sub-ind (S.◆-η i) = M.◆-η i
 Tm-ind (S.Tm-is-set a₁ a₂ p q i j) =
   is-set→squarep
     {A = λ i j → M.Tm _ _ (S.Tm-is-set _ _ _ _ i j)}
-    (λ i j → hlevel!) refl (λ j → Tm-ind (p j)) (λ j → Tm-ind (q j)) refl i j
+    (λ i j → hlevel 2) refl (λ j → Tm-ind (p j)) (λ j → Tm-ind (q j)) refl i j
 Tm-ind (a S.[ γ ]) = Tm-ind a M.[ Sub-ind γ ]
 Tm-ind (S.[]-∘ a γ δ i) = M.[]-∘ (Tm-ind a) (Sub-ind γ) (Sub-ind δ) i
 Tm-ind (S.[]-id a i) = M.[]-id (Tm-ind a) i
